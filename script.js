@@ -48,11 +48,12 @@ function reload(arr, place) {
 
      
         title.ondblclick = () => {
-            task.isDone = !task.isDone
-            if (task.isDone) {
-                title.classList.add('checked')
-            } else {
+            if (task.isDone === true) {
+                task.isDone = false
                 title.classList.remove('checked')
+            } else {
+                task.isDone = true
+                title.classList.add('checked')
             }
         }
 
