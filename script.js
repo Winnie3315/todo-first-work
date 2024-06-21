@@ -1,21 +1,17 @@
-const form = document.querySelector('form')
-const inp = document.querySelector(".inp")
-const btn = document.querySelector(".btn")
-const container = document.querySelector(".container")
-const todos = []
-
-reload(todos, container)
+const form = document.querySelector('form');
+const inp = document.querySelector(".inp");
+const container = document.querySelector(".container");
+const todos = [];
 
 form.onsubmit = (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     if (inp.value === '') {
-        alert("fill")
-        return
+       alert("fill");
+       return;
     }
 
-    const fm = new FormData(form)
-
+    const fm = new FormData(form);
     const task = {
         id: crypto.randomUUID(),
         task: fm.get('title'),
@@ -23,52 +19,65 @@ form.onsubmit = (event) => {
         isDone: false
     };
 
-    todos.push(task)
-    reload(todos, container)
-    
-}
+    todos.push(task);
+
+    fetch('http://localhost:8080/todo', {
+        method: 'POST',
+        body: JSON.stringify(task)
+    })
+    .then(() => reload(todos, container))
+
+};
 
 function reload(arr, place) {
-    place.innerHTML = ""
+    place.innerHTML = "";
 
     arr.forEach((task, index) => {
-        let item = document.createElement('div')
-        let topSides = document.createElement('div')
-        let title = document.createElement('span')
-        let x = document.createElement('button')
-        let time = document.createElement('span')
+        let item = document.createElement('div');
+        let topSides = document.createElement('div');
+        let title = document.createElement('span');
+        let changeBtn = document.createElement("button")
+        let x = document.createElement('button');
+        let time = document.createElement('span');
 
-        item.classList.add('item')
-        topSides.classList.add("top-sides")
-        time.classList.add("time")
+        item.classList.add('item');
+        topSides.classList.add("top-sides");
+        time.classList.add("time");
 
-        title.innerHTML = task.task
-        x.innerHTML = 'X'
-        time.innerHTML = task.time
+         title.innerHTML = task.task;
+         x.innerHTML = 'X';
+         changeBtn.innerHTML = `<img src="./change.svg" alt="">`
+         time.innerHTML = task.time;
 
-     
         title.ondblclick = () => {
-            if (task.isDone === true) {
-                task.isDone = false
-                title.classList.remove('checked')
-            } else {
-                task.isDone = true
-                title.classList.add('checked')
-            }
-        }
+            task.isDone = !task.isDone;
+            title.classList.toggle('checked', task.isDone);
+        };
 
-        
         if (task.isDone) {
-            title.classList.add('checked')
+            title.classList.add('checked');
         }
 
         x.onclick = () => {
-            todos.splice(index, 1)
-            reload(todos, container)
-        }
+            fetch(`http://localhost:8080/todo?id=${task.id}`, {
+                method: 'DELETE',
+                // body: JSON.stringify(task)
+            })
+            .then(res => reload(todos, container))
+            // .then(() => {
+            //     todos.splice(index, 1);
+                
+            // })
+        };
+        changeBtn.onclick = () => {
+            fetch(`http://localhost:8080/todo?id=${task.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(task)
+            })
+        }  
 
-        topSides.append(title, x)
-        item.append(topSides, time)
-        container.append(item)
-    })
+        topSides.append(title, x, changeBtn);
+        item.append(topSides, time);
+        place.append(item);
+    });
 }
