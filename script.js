@@ -19,13 +19,26 @@ form.onsubmit = (event) => {
         isDone: false
     };
 
-    todos.push(task);
+    // todos.push(task);
 
     fetch('http://localhost:8080/todo', {
         method: 'POST',
         body: JSON.stringify(task)
     })
-    .then(() => reload(todos, container))
+    .then(res => res.json())
+    .then((res) => {
+        fetch('http://localhost:8080/todo', {
+            method: 'GET',
+             headers: {
+            'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(response => {
+            console.log(response)
+            reload(response, container)
+        })
+    })
 
 };
 
@@ -59,20 +72,26 @@ function reload(arr, place) {
         }
 
         x.onclick = () => {
-            fetch(`http://localhost:8080/todo?id=${task.id}`, {
+            console.log(task.id);
+            fetch(`http://localhost:8080/todo/${task.id}`, {
                 method: 'DELETE',
                 // body: JSON.stringify(task)
             })
-            .then(res => reload(todos, container))
+            .then(res => reload(res, container))
             // .then(() => {
             //     todos.splice(index, 1);
                 
             // })
         };
         changeBtn.onclick = () => {
-            fetch(`http://localhost:8080/todo?id=${task.id}`, {
+            let pr = prompt("change")
+            if(pr){
+                item.title = pr
+                title.innerHTML = pr
+            }
+            fetch(`http://localhost:8080/todo/${task.id}`, {
                 method: 'PATCH',
-                body: JSON.stringify(task)
+                body: JSON.stringify({title: pr})
             })
         }  
 
